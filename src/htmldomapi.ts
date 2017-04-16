@@ -6,11 +6,13 @@ export interface DOMAPI {
   insertBefore: (parentNode: Node, newNode: Node, referenceNode: Node | null) => void;
   removeChild: (node: Node, child: Node) => void;
   appendChild: (node: Node, child: Node) => void;
-  parentNode: (node: Node) => Node;
-  nextSibling: (node: Node) => Node;
+  parentNode: (node: Node) => Node | null;
+  nextSibling: (node: Node) => Node | null;
   tagName: (elm: Element) => string;
   setTextContent: (node: Node, text: string | null) => void;
   getTextContent: (node: Node) => string | null;
+  setClass: (node: Element, className: string) => void;
+  setId: (node: Element, id: string) => void;
   isElement: (node: Node) => node is Element;
   isText: (node: Node) => node is Text;
   isComment: (node: Node) => node is Comment;
@@ -64,6 +66,14 @@ function getTextContent(node: Node): string | null {
   return node.textContent;
 }
 
+function setClass(node: Element, className: string): void {
+  node.setAttribute('class', className)
+}
+
+function setId(node: Element, idName: string): void {
+  node.setAttribute('id', idName)
+}
+
 function isElement(node: Node): node is Element {
   return node.nodeType === 1;
 }
@@ -76,7 +86,7 @@ function isComment(node: Node): node is Comment {
   return node.nodeType === 8;
 }
 
-export const htmlDomApi = {
+export const htmlDomApi: DOMAPI = {
   createElement,
   createElementNS,
   createTextNode,
@@ -89,9 +99,11 @@ export const htmlDomApi = {
   tagName,
   setTextContent,
   getTextContent,
+  setClass,
+  setId,
   isElement,
   isText,
   isComment,
-} as DOMAPI;
+};
 
 export default htmlDomApi;
