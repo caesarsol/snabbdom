@@ -72,7 +72,7 @@ describe('thunk', function() {
     }
     var vnode1 = thunk('span.number', vnodeFn, ['World!']);
     elm = patch(vnode0, vnode1).elm;
-    assert.equal(elm.innerText, 'Hello World!');
+    assert.equal(elm.innerHTML, 'Hello World!');
   });
   it('renders correctly when root', function() {
     var called = 0;
