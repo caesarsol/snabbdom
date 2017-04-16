@@ -8,6 +8,10 @@ var patch = snabbdom.init([
 ]);
 var h = require('../h').default;
 
+function emptyStringOrNull(v) {
+  return v === '' || v === null
+}
+
 describe('style', function() {
   var elm, vnode0;
   beforeEach(function() {
@@ -83,7 +87,7 @@ describe('style', function() {
     elm = patch(vnode0, vnode1).elm;
     assert.equal(elm.style.getPropertyValue('--myVar'), 1);
     patch(vnode1, vnode2);
-    assert.equal(elm.style.getPropertyValue('--myVar'), '');
+    assert(emptyStringOrNull(elm.style.getPropertyValue('--myVar'))); // It is null in some Safari versions
     patch(vnode2, vnode3);
     assert.equal(elm.style.getPropertyValue('--myVar'), 2);
   });
@@ -94,7 +98,7 @@ describe('style', function() {
     patch(vnode0, vnode1);
     assert.equal(elm.firstChild.style.getPropertyValue('--myVar'), 1);
     patch(vnode1, vnode2);
-    assert.equal(elm.firstChild.style.getPropertyValue('--myVar'), '');
+    assert(emptyStringOrNull(elm.firstChild.style.getPropertyValue('--myVar'))); // It is null in some Safari versions
     patch(vnode2, vnode3);
     assert.equal(elm.firstChild.style.getPropertyValue('--myVar'), 2);
   });
