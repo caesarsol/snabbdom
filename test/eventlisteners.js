@@ -1,3 +1,5 @@
+'use strict'
+
 var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
@@ -157,16 +159,58 @@ describe('event listeners', function() {
   });
   it('shared handlers in parent and child nodes', function() {
     var result = [];
-    var sharedHandlers = {
-      click: function(ev) { result.push(ev); }
-    };
-    var vnode1 = h('div', {on: sharedHandlers}, [
-      h('a', {on: sharedHandlers}, 'Click my parent'),
+    function sharedClickHandler(ev) { result.push('1-' + ev.target.tagName + ':' + ev.currentTarget.tagName); }
+    function sharedClickHandler2(ev) { result.push('2-' + ev.target.tagName + ':' + ev.currentTarget.tagName); }
+    var vnode1 = h('div', {on: { click: sharedClickHandler }}, [
+      h('a', {on: { click: sharedClickHandler2 }}, 'Click my parent'),
     ]);
+    // var sharedHandlers = {
+    //   click: function(ev) { result.push(ev.target.tagName) }
+    // };
+    // var vnode1 = h('div', {on: sharedHandlers}, [
+    //   h('a', {on: sharedHandlers}, 'Click my parent'),
+    // ]);
     elm = patch(vnode0, vnode1).elm;
     elm.click();
-    assert.equal(1, result.length);
+    assert.equal(result.join(' '), '1-DIV:DIV')
     elm.firstChild.click();
-    assert.equal(3, result.length);
+    assert.equal(result.join(' '), '1-DIV:DIV 2-A:A 1-A:DIV')
+    // assert.equal(result.length, 3);
+  });
+  it('shared handlers in parent and child nodes NATIVE', function() {
+    var result = [];
+    function handleEvent(event, vnode) {
+      var name = event.type,
+          on = vnode.data.on;
+
+      // call event handler(s) if exists
+      if (on && on[name]) {
+        on[name](event)
+      }
+    }
+    function createListener() {
+      return function handler(event) {
+        handleEvent(event, handler.vnode);
+      }
+    }
+    function sharedClickHandler(ev) { result.push('1-' + ev.target.tagName + ':' + ev.currentTarget.tagName); }
+    function sharedClickHandler2(ev) { result.push('2-' + ev.target.tagName + ':' + ev.currentTarget.tagName); }
+    elm = document.createElement('div')
+    var listener = createListener()
+    listener.vnode = { data: { on: { click: sharedClickHandler } } }
+    elm.addEventListener('click', listener, false)
+    document.body.appendChild(elm)
+
+    var elmChild = document.createElement('a')
+    var listener2 = createListener()
+    listener2.vnode = { data: { on: { click: sharedClickHandler2 } } }
+    elmChild.addEventListener('click', listener2, false)
+    elm.appendChild(elmChild)
+
+    elm.click();
+    assert.equal(result.join(' '), '1-DIV:DIV')
+    elm.firstChild.click();
+    assert.equal(result.join(' '), '1-DIV:DIV 2-A:A 1-A:DIV')
+    // assert.equal(result.length, 3);
   });
 });
